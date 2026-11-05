@@ -1,0 +1,176 @@
+<!doctype html>
+<!-- File: static/admin.html; Summary: Password-protected API settings, meeting invitations, and recording artifacts. -->
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>管理者設定 | Jitsi Meet</title>
+    <link rel="stylesheet" href="/ai/static/style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/ai/">Jitsi Meet <span>管理者設定</span></a>
+      <nav><a href="/ai/">会議の入口</a></nav>
+    </header>
+    <main class="page">
+      <h1>会議とAIの設定</h1>
+      <p id="message" class="message" role="status"></p>
+      <div class="columns">
+        <section class="panel stack" style="margin: 0">
+          <h2>OpenAI APIキー</h2>
+          <p id="key-status" class="signal">状態を確認しています</p>
+          <form id="settings-form" class="stack">
+            <label
+              >新しいAPIキー<input
+                id="api-key"
+                type="password"
+                autocomplete="new-password"
+                placeholder="変更する場合だけ入力" /></label
+            ><small
+              >キーの保存先はサーバーです。保存済みの値は画面や参加者へ返しません。</small
+            >
+            <div class="actions">
+              <button id="reload-models" type="button">モデル候補を取得</button
+              ><small id="model-status"
+                >APIキーの利用可能モデルから選択できます。</small
+              >
+            </div>
+            <div class="field-grid">
+              <label
+                >会議中の文字起こしモデル<select
+                  id="transcription-model"
+                  required
+                ></select></label
+              ><label
+                >録画の文字起こしモデル<select
+                  id="recording-transcription-model"
+                  required
+                ></select></label
+              ><label
+                >字幕翻訳モデル<select
+                  id="subtitle-model"
+                  required
+                ></select></label
+              ><label
+                >音声通訳モデル<select
+                  id="translation-model"
+                  required
+                ></select></label
+              ><label
+                >議事録モデル<select
+                  id="minutes-model"
+                  required
+                ></select></label
+              ><label
+                >AIの同時利用人数<input
+                  id="max-speakers"
+                  type="number"
+                  min="1"
+                  max="8"
+                  required /></label
+              ><label
+                >1会議の累計音声時間（分）<input
+                  id="audio-minutes"
+                  type="number"
+                  min="1"
+                  max="480"
+                  required
+              /></label>
+            </div>
+            <small
+              >会議中と録画後では対応する文字起こしモデルが異なります。通訳には専用APIに対応したモデルだけを表示します。会議中の文字起こし・字幕翻訳・音声通訳モデルやキーを変更すると、AI接続が再接続されます。</small
+            ><small
+              >累計音声時間は、文字起こしと音声通訳へ中継した参加者ごとの音声時間を合算します。通訳先が増えるとAPIの利用量も増えます。</small
+            ><label class="check"
+              ><input
+                id="auto-minutes"
+                type="checkbox"
+              />録画終了後・会議終了後に議事録とタスクを自動作成する</label
+            ><small
+              >有効にすると録画音声をOpenAIへ送信します。設定済みキーのプロジェクトに利用料金が発生します。</small
+            >
+            <div class="actions">
+              <button class="primary">設定を保存</button
+              ><button id="check-key" type="button">API接続を確認</button
+              ><button id="delete-key" class="danger" type="button">
+                キーを削除
+              </button>
+            </div>
+          </form>
+        </section>
+        <section class="panel stack" style="margin: 0">
+          <h2>AI会議を作成</h2>
+          <form id="create-form" class="stack">
+            <label
+              >会議名<input
+                id="title"
+                maxlength="120"
+                placeholder="例：運用確認ミーティング"
+                required /></label
+            ><button class="primary">会議と招待リンクを作成</button>
+          </form>
+          <small
+            >AI会議では参加者の音声をOpenAIへ送信します。参加者へ説明してからリンクを共有してください。AI利用と記録画面の招待リンクは作成から24時間有効です。主催者リンクは参加者に配布しないでください。</small
+          >
+          <div id="links" class="stack" hidden>
+            <label
+              >主催者リンク<a
+                id="host-link"
+                class="link-field"
+                rel="noreferrer"
+                target="_blank"
+              ></a></label
+            ><label
+              >参加リンク（Web・公式アプリ共通）<input id="guest-link" readonly
+            /></label>
+            <div class="actions">
+              <button id="copy-link">参加者リンクをコピー</button
+              ><a
+                id="open-meeting"
+                class="button primary"
+                target="_blank"
+                rel="noreferrer"
+                >主催者として参加</a
+              >
+            </div>
+          </div>
+          <div id="app-links" class="actions" hidden>
+            <a id="app-ios" class="button">iPhoneアプリで参加</a
+            ><a id="app-android" class="button">Androidアプリで参加</a
+            ><a id="guest-dashboard" target="_blank" rel="noreferrer"
+              >参加者の議事録画面</a
+            >
+          </div>
+          <div class="notice">
+            録画は720p・同時1件です。録画ボタンは会議に参加した主催者の画面に表示されます。
+          </div>
+        </section>
+      </div>
+      <section class="panel">
+        <h2>最近の会議</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>会議名</th>
+                <th>作成日時</th>
+                <th>AI音声累計</th>
+                <th>状態</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="rooms"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>録画・議事録・タスク</h2>
+        <p class="muted">
+          録画を停止すると解析が始まります。キー設定待ち・エラーの場合は状態に表示されます。
+        </p>
+        <div id="jobs" class="jobs-list"></div>
+      </section>
+    </main>
+    <script type="module" src="/ai/static/admin.js"></script>
+  </body>
+</html>

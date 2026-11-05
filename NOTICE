@@ -1,0 +1,20 @@
+jitsi-meet-ai
+Copyright 2026 jitsi-meet-ai contributors
+
+This is an independent extension for Jitsi Meet. It is not an official
+Jitsi release and is not endorsed by the upstream projects.
+
+Jitsi Meet
+Source: https://github.com/jitsi/jitsi-meet/tree/stable/jitsi-meet_11248
+License: Apache License, Version 2.0
+
+Jitsi Opus Transcriber Proxy
+Source: https://github.com/jitsi/opus-transcriber-proxy/tree/ee5836e67806349395ede2447376003da893f7a9
+License: Apache License, Version 2.0
+
+Upstream programs are installed separately. The adapter in
+ops/patch-opus-proxy.py describes changes applied to the pinned proxy.
+Preserve upstream copyright, license and notice files in those installations.
+
+No generated Windows speech audio, API credentials, meeting recordings,
+or private deployment state is included in this repository.

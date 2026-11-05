@@ -1,0 +1,489 @@
+/* File: static/style.css
+ * Summary: Accessible Japanese meeting console with a wide video canvas and a compact interpretation desk. */
+:root {
+  color-scheme: light;
+  --ink: #20334e;
+  --muted: #56677e;
+  --line: #d4deeb;
+  --paper: #f2f6fb;
+  --white: #fff;
+  --blue: #244c85;
+  --teal: #167773;
+  --danger: #ad2837;
+  font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+}
+a {
+  color: var(--blue);
+  text-underline-offset: 3px;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--ink);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+}
+button:hover,
+.button:hover {
+  border-color: var(--blue);
+}
+button.primary,
+.button.primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+button.danger {
+  color: var(--danger);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+button.active {
+  background: var(--teal);
+  color: white;
+  border-color: var(--teal);
+}
+:focus-visible {
+  outline: 3px solid #bd6b13;
+  outline-offset: 3px;
+}
+input:not([type="checkbox"]):not([type="range"]),
+select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #a8b8cd;
+  border-radius: 5px;
+  background: white;
+  color: var(--ink);
+  padding: 0.55rem 0.7rem;
+}
+input[type="checkbox"] {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+small,
+.muted {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-weight: 400;
+}
+.check input {
+  margin-top: 0.28rem;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+h1 {
+  font-size: 2.1rem;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+}
+h2 {
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+h3 {
+  font-size: 1rem;
+}
+p {
+  max-width: 72ch;
+}
+header {
+  background: white;
+  border-bottom: 1px solid var(--line);
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 2rem;
+}
+.brand {
+  font-size: 1.2rem;
+  color: var(--ink);
+  font-weight: 750;
+  text-decoration: none;
+}
+.brand span {
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 0.6rem;
+}
+nav {
+  display: flex;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+main.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+.intro {
+  padding: 1.3rem 0 2.8rem;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.language-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin: 1.5rem 0;
+  padding: 1.2rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 1.05rem;
+}
+.signal {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.signal::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #8492a4;
+  border-radius: 50%;
+}
+.signal.ok::before {
+  background: var(--teal);
+}
+.panel {
+  padding: 1.8rem;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.stack {
+  display: grid;
+  gap: 1.1rem;
+  align-content: start;
+}
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.flow-list {
+  margin: 1.5rem 0;
+  padding: 0;
+  list-style: none;
+}
+.flow-list li {
+  border-top: 1px solid var(--line);
+  padding: 1.25rem 0;
+}
+.flow-list li:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.flow-list strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.notice {
+  padding: 0.9rem 1rem;
+  border-left: 4px solid var(--teal);
+  background: #e9f4f3;
+  color: #185956;
+}
+.error {
+  border-left-color: var(--danger);
+  background: #fff0f1;
+  color: var(--danger);
+}
+.message:empty {
+  display: none;
+}
+.message {
+  white-space: pre-wrap;
+}
+.wide {
+  grid-column: 1/-1;
+}
+section + section {
+  margin-top: 2rem;
+}
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.link-field {
+  word-break: break-all;
+  font-size: 0.85rem;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: left;
+  font-size: 0.9rem;
+}
+td,
+th {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+th {
+  color: var(--muted);
+}
+.table-wrap {
+  overflow: auto;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  background: #f7f9fc;
+  padding: 1rem;
+  border-radius: 5px;
+}
+details {
+  border-top: 1px solid var(--line);
+  padding: 1rem 0;
+}
+summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+footer {
+  border-top: 1px solid var(--line);
+  padding: 1.5rem 2rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+body.meeting {
+  height: 100dvh;
+  overflow: hidden;
+  background: #1f2f45;
+}
+.meeting header {
+  min-height: 62px;
+  padding: 0.7rem 1.2rem;
+}
+.meeting header h1 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+.meeting-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  height: calc(100dvh - 64px);
+}
+#conference {
+  min-width: 0;
+  height: 100%;
+  position: relative;
+}
+#conference iframe {
+  border: 0;
+  width: 100%;
+  height: 100%;
+}
+.empty-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  height: 100%;
+  padding: 2rem;
+  text-align: center;
+}
+.interpretation {
+  background: white;
+  padding: 1.2rem;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.interpretation h2 {
+  margin-bottom: 0.5rem;
+}
+.interpretation section {
+  margin: 0;
+}
+.interpretation .stack {
+  gap: 0.7rem;
+}
+.interpretation button {
+  font-size: 0.9rem;
+  padding: 0.5rem 0.7rem;
+}
+.compact {
+  font-size: 0.8rem;
+}
+.captions {
+  min-height: 160px;
+  max-height: 36vh;
+  overflow: auto;
+  background: #f3f6fb;
+  border-radius: 5px;
+  padding: 0.75rem;
+}
+.caption {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.caption:last-child {
+  border: 0;
+}
+.caption small {
+  display: block;
+  font-size: 0.73rem;
+}
+.caption p {
+  margin: 0.1rem 0 0;
+  font-size: 0.9rem;
+}
+.caption.translation p {
+  color: #115d59;
+}
+.volume {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 0.7rem;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+.volume input {
+  width: 100%;
+}
+.recording-on {
+  color: var(--danger);
+  font-weight: 650;
+}
+.join-box {
+  margin: auto;
+  width: min(460px, 100%);
+  text-align: left;
+  color: var(--ink);
+}
+.join-box h2 {
+  font-size: 1.4rem;
+}
+.host-tools[hidden],
+[hidden] {
+  display: none !important;
+}
+.meeting .message {
+  font-size: 0.84rem;
+}
+.jobs-list .actions {
+  margin-top: 0.6rem;
+}
+.jobs-list h3 {
+  margin-bottom: 0.3rem;
+}
+.jobs-list p {
+  margin-bottom: 0.5rem;
+}
+@media (max-width: 850px) {
+  .intro {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .columns {
+    grid-template-columns: 1fr;
+  }
+  main.page {
+    padding: 1.8rem 1rem;
+  }
+  header {
+    padding: 1rem;
+    align-items: flex-start;
+  }
+  .brand span {
+    display: block;
+    margin-left: 0;
+    font-size: 0.85rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+  }
+  .meeting {
+    overflow: auto !important;
+  }
+  .meeting-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  #conference {
+    height: 62dvh;
+    min-height: 420px;
+  }
+  .interpretation {
+    overflow: visible;
+  }
+  .captions {
+    max-height: 300px;
+  }
+  .meeting header {
+    align-items: center;
+  }
+  .meeting header .actions button {
+    font-size: 0.8rem;
+  }
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    padding: 1.2rem;
+  }
+}
+.columns > section {
+  margin-top: 0;
+}

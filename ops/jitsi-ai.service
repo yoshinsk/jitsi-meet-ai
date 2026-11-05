@@ -1,0 +1,32 @@
+# File: ops/jitsi-ai.service
+# Summary: Run one room-aware AI worker behind nginx with private writable state and bounded resources.
+[Unit]
+Description=Jitsi AI meeting companion
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jitsi-ai
+Group=jitsi-ai
+SupplementaryGroups=jibri
+WorkingDirectory=/opt/jitsi-ai
+EnvironmentFile=/etc/jitsi-ai/environment
+Environment=JITSI_AI_DATA=/var/lib/jitsi-ai
+Environment=JITSI_RECORDINGS=/srv/jitsi-recordings
+ExecStart=/opt/jitsi-ai/.venv/bin/uvicorn service.app:app --host 127.0.0.1 --port 8765 --workers 1 --ws-max-size 262144 --no-access-log
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/jitsi-ai
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryMax=768M
+CPUQuota=150%
+
+[Install]
+WantedBy=multi-user.target

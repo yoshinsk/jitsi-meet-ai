@@ -1,0 +1,12 @@
+{
+  "_file": "ops/japanese-announcements.json",
+  "_summary": "会議の録画・文字起こし・配信の開始と終了を案内する日本語音声の台本です。",
+  "recordingOn": "録画を開始しました。この会議は録画されています。",
+  "recordingOff": "録画を停止しました。",
+  "transcriptionOn": "文字起こしを開始しました。この会議の音声は、文字起こしのために送信されます。",
+  "transcriptionOff": "文字起こしを停止しました。",
+  "recordingAndTranscriptionOn": "録画と文字起こしを開始しました。この会議は録画されています。",
+  "recordingAndTranscriptionOff": "録画と文字起こしを停止しました。",
+  "liveStreamingOn": "ライブ配信を開始しました。",
+  "liveStreamingOff": "ライブ配信を停止しました。"
+}

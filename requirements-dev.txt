@@ -1,0 +1,4 @@
+# File: requirements-dev.txt
+# Summary: Development-only dependencies for the service's authentication and audio protocol tests.
+-r requirements.txt
+pytest>=9,<10

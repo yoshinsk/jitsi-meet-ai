@@ -1,0 +1,8 @@
+# File: requirements.txt
+# Summary: Runtime dependencies for the Jitsi AI companion service.
+fastapi==0.162.0
+uvicorn==0.54.0
+httpx==0.28.1
+websockets==16.1.1
+pydantic==2.14.2
+anyio==4.16.0

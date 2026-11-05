@@ -1,0 +1,127 @@
+<!doctype html>
+<!-- File: static/index.html; Summary: Japanese entry point for standard and interpreted Jitsi meetings. -->
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Jitsi Meet | 通訳・録画・議事録</title>
+    <link rel="stylesheet" href="/ai/static/style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/ai/">Jitsi Meet <span>テスト会議室</span></a>
+      <nav><a href="/ai/admin">管理者設定</a></nav>
+    </header>
+    <main class="page">
+      <div class="intro">
+        <div>
+          <h1>AI通訳・録画会議</h1>
+          <p>
+            Webと公式Jitsi
+            Meetアプリで会議に参加し、AIの字幕・音声通訳と録画後の議事録を利用できます。
+          </p>
+          <div class="language-list">
+            <span>日本語</span><span>English</span><span>中文</span
+            ><span>한국어</span><span>Tiếng Việt</span>
+          </div>
+          <p id="status" class="signal">AI設定を確認しています</p>
+        </div>
+        <div class="panel stack">
+          <h2>会議に参加する</h2>
+          <form id="join-form" class="stack">
+            <label
+              >招待リンク<input
+                id="invite"
+                type="url"
+                placeholder="主催者から届いた招待リンク"
+                required /></label
+            ><button class="primary">招待された会議へ</button>
+          </form>
+          <p class="muted">
+            AI会議は管理者が作成します。届いたリンクから参加し、聞きたい言語を選んでください。
+          </p>
+          <a class="button" href="/ai/admin">AI会議を作成する</a>
+        </div>
+      </div>
+      <div id="message" role="status" class="message"></div>
+      <div class="columns">
+        <section>
+          <h2>会議中</h2>
+          <ul class="flow-list">
+            <li>
+              <strong>発言の言語を自動認識</strong
+              >参加者ごとの音声を文字に起こし、選択した言語で字幕と通訳音声を届けます。
+            </li>
+            <li>
+              <strong>サーバーに録画</strong
+              >主催者が録画を開始します。1件ずつ録画でき、参加者に録画中の表示が出ます。
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h2>会議のあと</h2>
+          <ul class="flow-list">
+            <li>
+              <strong>議事録とタスクリスト</strong
+              >録画の音声から概要・決定事項・タスクを自動作成します。担当者と期限が不明な場合は「未定」と表示します。
+            </li>
+            <li>
+              <strong>記録をダウンロード</strong
+              >録画、文字起こし、議事録、タスクのCSVを保存できます。AIの出力は内容を確認してから利用してください。
+            </li>
+          </ul>
+        </section>
+      </div>
+      <section class="panel">
+        <h2>通常のJitsi会議</h2>
+        <form id="normal-form" class="actions">
+          <label for="normal-room">会議名</label
+          ><input
+            id="normal-room"
+            style="flex: 1; min-width: 180px"
+            pattern="[A-Za-z0-9_-]{3,80}"
+            placeholder="meeting-20261104"
+            required
+          /><button>通常会議を開く</button>
+        </form>
+      </section>
+      <p class="muted" style="margin-top: 2rem">
+        AI会議では参加者の音声をOpenAIへ送信します。録画後の自動解析を有効にすると、録画音声も送信されます。利用には管理者のAPIキー設定とOpenAIの利用料金が必要です。
+      </p>
+    </main>
+    <footer>jitsi-meet-ai / 日本語の会議画面・5言語のAI通訳</footer>
+    <script type="module">
+      // File: static/index.html (module); Summary: Validate same-site invitations and show actual API readiness.
+      import { api, $, message } from "/ai/static/shared.js";
+      api("/ai/api/status")
+        .then((x) => {
+          const e = $("#status");
+          e.textContent = x.configured
+            ? "AIのAPIキー設定済み"
+            : "AIのAPIキー設定待ち / 通常会議・録画は利用できます";
+          e.classList.toggle("ok", x.configured);
+        })
+        .catch(() => {
+          $("#status").textContent = "AIの状態を取得できません";
+        });
+      $("#join-form").onsubmit = (e) => {
+        e.preventDefault();
+        try {
+          const u = new URL($("#invite").value);
+          if (
+            u.origin !== location.origin ||
+            !/^\/(?:ai\/room\/|ai-)[a-f0-9]{32}$/.test(u.pathname)
+          )
+            throw new Error();
+          location.href = u.href;
+        } catch {
+          message("このサーバーの会議招待リンクを入力してください。", true);
+        }
+      };
+      $("#normal-form").onsubmit = (e) => {
+        e.preventDefault();
+        location.href = "/" + encodeURIComponent($("#normal-room").value);
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<!-- File: static/meeting.html; Summary: Native-compatible Jitsi meeting, application links, and protected meeting records. -->
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>会議 | Jitsi Meet</title>
+    <link rel="stylesheet" href="/ai/static/style.css" />
+  </head>
+  <body class="meeting">
+    <header>
+      <h1 id="meeting-title">会議を確認しています</h1>
+      <div class="actions">
+        <button id="invite" hidden>参加リンクをコピー</button
+        ><a href="/ai/">会議の入口</a>
+      </div>
+    </header>
+    <main class="meeting-layout">
+      <div id="conference">
+        <div class="empty-stage">
+          <form id="join-form" class="panel stack join-box">
+            <h2>会議に参加する</h2>
+            <label
+              >表示名<input
+                id="name"
+                autocomplete="name"
+                maxlength="80"
+                required
+                placeholder="会議で表示する名前"
+            /></label>
+            <p class="notice compact">
+              このAI会議では、参加者の音声をOpenAIへ送信して文字起こし・通訳に利用します。
+            </p>
+            <button class="primary">ブラウザーで参加</button
+            ><small
+              >スマートフォンは右側の公式アプリ用リンクからも参加できます。</small
+            >
+          </form>
+        </div>
+      </div>
+      <aside class="interpretation">
+        <section class="stack">
+          <h2>AI通訳・字幕</h2>
+          <p id="ai-status" class="signal">会議を確認しています</p>
+          <p class="compact">
+            音声通訳は参加時にはオフです。会議の「詳細な操作」から「音声通訳」を開き、聞きたい言語を選んでください。「字幕」では文字起こしと翻訳を表示できます。
+          </p>
+          <p class="compact">
+            音声案内はWeb版で日本語になります。公式アプリは標準の案内音声を使用します。
+          </p>
+          <small
+            >入力言語は自動認識します。日本語・英語・中国語・韓国語・ベトナム語で利用できます。ヘッドセットの使用をお勧めします。</small
+          >
+        </section>
+        <section class="stack">
+          <h2>公式アプリで参加</h2>
+          <a id="join-ios" class="button">iPhoneアプリを開く</a
+          ><a id="join-android" class="button">Androidアプリを開く</a
+          ><a id="join-standard" target="_blank" rel="noreferrer"
+            >通常の会議画面を開く</a
+          ><small
+            >アプリを最新版に更新してください。上のリンクで開けない場合は、会議の参加リンクをJitsi
+            Meetアプリに入力してください。</small
+          ><button id="copy-conference">会議の参加リンクをコピー</button>
+        </section>
+        <div id="message" class="message" role="status"></div>
+        <section id="host-tools" class="stack" hidden>
+          <h2>主催者の操作</h2>
+          <p id="record-status" class="muted">録画停止中</p>
+          <div class="actions">
+            <button id="record" disabled>録画を開始</button
+            ><button id="minutes">議事録を作成</button>
+          </div>
+          <small
+            >録画音声は、管理者が自動解析を有効にした場合にOpenAIへ送信されます。録画前に参加者へ説明してください。</small
+          ><button id="close-meeting" class="danger">
+            AI処理を終了して議事録を作成
+          </button>
+        </section>
+        <section>
+          <h2>会議の記録</h2>
+          <div id="jobs" class="jobs-list muted"></div>
+          <small
+            >録画は原音を保存します。AIの議事録・タスクは下書きとして確認してください。</small
+          >
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="/ai/static/meeting.js"></script>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+# File: ops/jitsi-ai-proxy.service
+# Summary: Private native-client speech translation with bounded resources and no public proxy endpoint.
+[Unit]
+Description=Jitsi native audio translation proxy
+After=network-online.target jitsi-ai.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jitsi-ai
+Group=jitsi-ai
+WorkingDirectory=/opt/jitsi-opus-proxy
+ExecStart=/opt/jitsi-ai/.venv/bin/python /opt/jitsi-ai/ops/proxy-supervisor.py
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/jitsi-ai
+MemoryMax=768M
+CPUQuota=150%
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target
