@@ -4,7 +4,6 @@
 import asyncio
 from contextlib import asynccontextmanager, suppress
 import csv
-import hashlib
 import io
 import json
 import re
@@ -13,14 +12,11 @@ import time
 from urllib.parse import quote
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse, Response
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import ai, bridge, storage as store
-
-basic = HTTPBasic()
+from . import ai, auth, bridge, storage as store
 
 
 @asynccontextmanager
@@ -38,7 +34,7 @@ app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None
 
 @app.middleware("http")
 async def boundaries(request: Request, call_next):
-    """Block cross-site administrative writes even when the browser caches HTTP Basic credentials."""
+    """Cookie認証の操作を含め、許可したOrigin以外からの書き込みを拒否する。"""
     internal = (request.url.path == "/internal/bridge/register"
                 and request.client.host in {"127.0.0.1", "::1", "testclient"}
                 and bridge.trusted(request.headers.get("authorization", "")))
@@ -57,15 +53,11 @@ async def provider_error(request, exc):
     return JSONResponse({"detail": str(exc)}, status_code=502)
 
 
-def admin(credentials: HTTPBasicCredentials = Depends(basic)):
-    """The SSH password is never used for an SSH login from the application; verify only its one-way hash."""
-    config = store.settings()
-    salt = config.get("admin_salt", "")
-    calculated = hashlib.pbkdf2_hmac("sha256", credentials.password.encode(), salt.encode(), 600000).hex()
-    if (not salt or not secrets.compare_digest(credentials.username.encode(), b"ubuntu")
-            or not secrets.compare_digest(calculated, config.get("admin_digest", ""))):
-        raise HTTPException(401, "管理者認証が必要です。", headers={"WWW-Authenticate": 'Basic realm="Jitsi AI administration"'})
-    return credentials.username
+def admin(request: Request):
+    """管理APIは有効なセッションだけを許可し、ブラウザーに残るBasic認証情報は使用しない。"""
+    if not auth.authenticated(request.cookies.get(auth.COOKIE, "")):
+        raise HTTPException(401, "管理者のサインインが必要です。")
+    return "ubuntu"
 
 
 def access(room, authorization):
@@ -86,7 +78,7 @@ def host_access(room, authorization):
 @app.get("/ai/api/status")
 def status():
     return {"configured": bool(store.settings()["api_key"]), "languages": store.LANGUAGES,
-            "service": "Jitsi AI companion", "version": "1.2.1", "transport":"jitsi-bridge"}
+            "service": "Jitsi AI companion", "version": "1.2.2", "transport":"jitsi-bridge"}
 
 
 @app.get("/ai/")
@@ -94,9 +86,45 @@ def home():
     return FileResponse(store.STATIC / "index.html")
 
 
-@app.get("/ai/admin", dependencies=[Depends(admin)])
-def admin_page():
+@app.get("/ai/login")
+def login_page(request: Request):
+    """サインイン済みなら管理画面へ戻し、未認証なら日本語の入力画面を表示する。"""
+    if auth.authenticated(request.cookies.get(auth.COOKIE, "")):
+        return RedirectResponse("/ai/admin", status_code=303)
+    return FileResponse(store.STATIC / "login.html")
+
+
+@app.get("/ai/admin")
+def admin_page(request: Request):
+    if not auth.authenticated(request.cookies.get(auth.COOKIE, "")):
+        return RedirectResponse("/ai/login", status_code=303)
     return FileResponse(store.STATIC / "admin.html")
+
+
+class AdminLogin(BaseModel):
+    username: str = Field(min_length=1, max_length=80)
+    password: str = Field(min_length=1, max_length=1024)
+
+
+@app.post("/ai/api/admin/login")
+def login(values: AdminLogin, request: Request):
+    """HTTPS専用・JavaScriptから読み出せないCookieに、有効期限付きの乱数だけを設定する。"""
+    token = auth.sign_in(values.username, values.password, request.cookies.get(auth.COOKIE, ""))
+    if not token:
+        raise HTTPException(401, "ユーザー名またはパスワードを確認してください。")
+    response = JSONResponse({"signed_in": True})
+    response.set_cookie(auth.COOKIE, token, max_age=auth.SESSION_SECONDS, path="/ai",
+                        secure=True, httponly=True, samesite="strict")
+    return response
+
+
+@app.post("/ai/api/admin/logout")
+def logout(request: Request):
+    """サーバー側のセッションとCookieの両方を削除する。期限切れ後の操作も成功として扱う。"""
+    auth.sign_out(request.cookies.get(auth.COOKIE, ""))
+    response = JSONResponse({"signed_out": True})
+    response.delete_cookie(auth.COOKIE, path="/ai", secure=True, httponly=True, samesite="strict")
+    return response
 
 
 @app.get("/ai/room/{room}")

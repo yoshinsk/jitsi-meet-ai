@@ -151,6 +151,7 @@ header {
 }
 nav {
   display: flex;
+  align-items: center;
   gap: 1.2rem;
   flex-wrap: wrap;
 }
@@ -158,6 +159,9 @@ main.page {
   max-width: 1180px;
   margin: 0 auto;
   padding: 3rem 2rem;
+}
+main.sign-in-page {
+  max-width: 540px;
 }
 .intro {
   padding: 1.3rem 0 2.8rem;

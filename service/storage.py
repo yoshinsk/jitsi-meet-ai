@@ -44,6 +44,9 @@ def init():
           CREATE TABLE IF NOT EXISTS capabilities (
             hash TEXT PRIMARY KEY, room TEXT REFERENCES rooms(id), role TEXT NOT NULL
           );
+          CREATE TABLE IF NOT EXISTS admin_sessions (
+            hash TEXT PRIMARY KEY, expires REAL NOT NULL, credential_hash TEXT NOT NULL
+          );
           CREATE TABLE IF NOT EXISTS segments (
             id INTEGER PRIMARY KEY, room TEXT REFERENCES rooms(id), speaker TEXT,
             language TEXT, kind TEXT, text TEXT, created REAL

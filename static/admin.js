@@ -1,6 +1,24 @@
 // File: static/admin.js
-// Summary: Administrative forms never retrieve or display a stored OpenAI API key.
+// Summary: Manage AI settings without exposing saved keys and revoke the administrator session on sign-out.
 import { $, api, message, renderJobs } from "./shared.js";
+
+// セッションの失効に成功した場合だけサインイン画面へ移動し、失敗時は再操作できるようにする。
+$("#sign-out").onclick = async () => {
+  const button = $("#sign-out");
+  button.disabled = true;
+  try {
+    await api("/ai/api/admin/logout", { method: "POST" });
+    window.location.replace("/ai/login?signed-out=1");
+  } catch (error) {
+    message(error.message, true);
+    button.disabled = false;
+  }
+};
+
+// 戻る操作で画面が復元された場合も、サーバーでセッションを再確認する。
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) window.location.reload();
+});
 const fields = {
   transcription_model: "transcription-model",
   recording_transcription_model: "recording-transcription-model",
@@ -195,3 +213,6 @@ Promise.all([settings(), refresh()]).catch((e) => message(e.message, true));
 setInterval(() => {
   if (!document.hidden) refresh().catch(() => {});
 }, 15000);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) refresh().catch(() => {});
+});

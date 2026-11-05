@@ -24,6 +24,9 @@ export async function api(path, { method = "GET", body, token } = {}) {
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!response.ok) {
+    // 期限切れや別タブでのサインアウト後は管理画面を閉じ、認証のやり直しへ案内する。
+    if (response.status === 401 && path.startsWith("/ai/api/admin/") && path !== "/ai/api/admin/login")
+      window.location.replace("/ai/login?expired=1");
     const error = await response.json().catch(() => ({}));
     throw new Error(
       typeof error.detail === "string"

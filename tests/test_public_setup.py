@@ -41,5 +41,7 @@ def test_generated_seed_authenticates_without_storing_plaintext(tmp_path, monkey
     store.init()
     store.save_settings({**store.DEFAULTS, **json.loads(seed.read_text())})
     with TestClient(app, base_url=store.ORIGIN) as client:
-        assert client.get('/ai/api/admin/settings', auth=('ubuntu', password)).status_code == 200
-        assert client.get('/ai/api/admin/settings', auth=('ubuntu', 'incorrect')).status_code == 401
+        client.headers['Origin'] = store.ORIGIN
+        assert client.post('/ai/api/admin/login', json={'username': 'ubuntu', 'password': password}).status_code == 200
+        assert client.get('/ai/api/admin/settings').status_code == 200
+        assert client.post('/ai/api/admin/login', json={'username': 'ubuntu', 'password': 'incorrect'}).status_code == 401

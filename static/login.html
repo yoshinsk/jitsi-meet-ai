@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- File: static/login.html; Summary: Japanese administrator sign-in form using an expiring, revocable server session. -->
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>管理者サインイン | Jitsi Meet</title>
+    <link rel="stylesheet" href="/ai/static/style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/ai/">Jitsi Meet <span>管理者設定</span></a>
+      <nav><a href="/ai/">会議の入口</a></nav>
+    </header>
+    <main class="page sign-in-page">
+      <h1>管理者サインイン</h1>
+      <p id="message" class="message" role="status"></p>
+      <section class="panel stack">
+        <form id="login-form" class="stack" method="post">
+          <label>ユーザー名<input id="username" name="username" autocomplete="username" value="ubuntu" maxlength="80" required /></label>
+          <label>パスワード<input id="password" name="password" type="password" autocomplete="current-password" maxlength="1024" required /></label>
+          <button class="primary" type="submit">サインイン</button>
+        </form>
+        <small>サインインは8時間有効です。操作を終えたら、管理者画面の「サインアウト」を押してください。</small>
+      </section>
+    </main>
+    <script type="module" src="/ai/static/login.js"></script>
+  </body>
+</html>

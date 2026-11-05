@@ -11,7 +11,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from service import ai, bridge, storage as store
+from service import ai, auth, bridge, storage as store
 from service.app import app, model_catalog
 
 
@@ -31,7 +31,9 @@ def client(tmp_path, monkeypatch):
 
 
 def admin(client, method, path, **kwargs):
-    return client.request(method, "/ai/api/admin/" + path, auth=("ubuntu", "test-password"), **kwargs)
+    if not client.cookies.get(auth.COOKIE):
+        assert client.post("/ai/api/admin/login", json={"username": "ubuntu", "password": "test-password"}).status_code == 200
+    return client.request(method, "/ai/api/admin/" + path, **kwargs)
 
 
 def room(client):
@@ -42,9 +44,97 @@ def room(client):
 
 
 def test_administration_requires_authentication(client):
-    assert client.get("/ai/admin").status_code == 401
+    page = client.get("/ai/admin", follow_redirects=False)
+    assert page.status_code == 303 and page.headers["location"] == "/ai/login"
+    assert "WWW-Authenticate" not in page.headers
+    assert 'id="login-form"' in client.get("/ai/login").text
     assert client.get("/ai/api/admin/settings").status_code == 401
+    # 古いBasic認証情報がブラウザーに残っていても、セッションなしではアクセスできない。
+    assert client.get("/ai/api/admin/settings", auth=("ubuntu", "test-password")).status_code == 401
     assert admin(client, "GET", "settings").status_code == 200
+    assert 'id="sign-out"' in client.get("/ai/admin").text
+
+
+@pytest.mark.parametrize("username,password", [("ubuntu", "incorrect"), ("another", "test-password")])
+def test_invalid_admin_credentials_never_create_a_session(client, username, password):
+    response = client.post("/ai/api/admin/login", json={"username": username, "password": password})
+    assert response.status_code == 401
+    assert "WWW-Authenticate" not in response.headers
+    assert "Set-Cookie" not in response.headers
+    with store.db() as conn:
+        assert conn.execute("SELECT COUNT(*) FROM admin_sessions").fetchone()[0] == 0
+
+
+def test_admin_logout_revokes_cookie_replay_and_preserves_meetings_and_key(client):
+    value = room(client)
+    key = "sk-only-a-test-never-a-real-key"
+    admin(client, "PUT", "settings", json={"api_key": key})
+    token = client.cookies.get(auth.COOKIE)
+    with store.db() as conn:
+        assert conn.execute("SELECT hash FROM admin_sessions").fetchone()[0] != token
+    response = client.post("/ai/api/admin/logout")
+    assert response.json() == {"signed_out": True}
+    assert "Max-Age=0" in response.headers["set-cookie"]
+    assert not client.cookies.get(auth.COOKIE)
+    assert client.get("/ai/api/admin/settings", headers={"Cookie": f"{auth.COOKIE}={token}"}).status_code == 401
+    assert client.get("/ai/api/admin/settings", auth=("ubuntu", "test-password")).status_code == 401
+    assert client.get("/ai/admin", follow_redirects=False).headers["location"] == "/ai/login"
+    assert store.settings()["api_key"] == key
+    assert client.get(f"/ai/api/rooms/{value['id']}", headers=value["guest"]).status_code == 200
+    assert client.post("/ai/api/admin/logout").json() == {"signed_out": True}
+    assert admin(client, "GET", "settings").status_code == 200
+    assert client.cookies.get(auth.COOKIE) != token
+
+
+def test_admin_cookie_has_secure_flags_and_expires_after_eight_hours(client):
+    response = client.post("/ai/api/admin/login", json={"username": "ubuntu", "password": "test-password"})
+    cookie = response.headers["set-cookie"]
+    assert all(flag in cookie for flag in ["HttpOnly", "Secure", "SameSite=strict", "Path=/ai", "Max-Age=28800"])
+    assert "test-password" not in response.text + cookie
+    with store.db() as conn:
+        conn.execute("UPDATE admin_sessions SET expires=?", (time.time() - 1,))
+    assert client.get("/ai/api/admin/settings").status_code == 401
+    assert client.get("/ai/admin", follow_redirects=False).status_code == 303
+
+
+def test_cross_site_sign_in_and_sign_out_are_rejected(client):
+    assert admin(client, "GET", "settings").status_code == 200
+    token = client.cookies.get(auth.COOKIE)
+    for path in ["login", "logout"]:
+        response = client.post("/ai/api/admin/" + path,
+                               json={"username": "ubuntu", "password": "test-password"},
+                               headers={"Origin": "https://attacker.invalid"})
+        assert response.status_code == 403
+    assert client.cookies.get(auth.COOKIE) == token
+    assert client.get("/ai/api/admin/settings").status_code == 200
+
+
+def test_admin_sign_out_keeps_other_browser_session_valid(client):
+    admin(client, "GET", "settings")
+    with TestClient(app, base_url=store.ORIGIN) as other:
+        other.headers["Origin"] = store.ORIGIN
+        admin(other, "GET", "settings")
+        assert client.cookies.get(auth.COOKIE) != other.cookies.get(auth.COOKIE)
+        client.post("/ai/api/admin/logout")
+        assert client.get("/ai/api/admin/settings").status_code == 401
+        assert other.get("/ai/api/admin/settings").status_code == 200
+
+
+def test_admin_sign_in_rotates_session_and_survives_service_initialization(client):
+    admin(client, "GET", "settings")
+    previous = client.cookies.get(auth.COOKIE)
+    client.post("/ai/api/admin/login", json={"username": "ubuntu", "password": "test-password"})
+    assert client.cookies.get(auth.COOKIE) != previous
+    assert client.get("/ai/api/admin/settings", headers={"Cookie": f"{auth.COOKIE}={previous}"}).status_code == 401
+    store.init()
+    assert client.get("/ai/api/admin/settings").status_code == 200
+
+
+def test_changing_admin_password_invalidates_issued_sessions(client):
+    admin(client, "GET", "settings")
+    store.save_settings({**store.settings(), "admin_digest": hashlib.pbkdf2_hmac(
+        "sha256", b"replacement-test-password", b"test-salt", 600000).hex()})
+    assert client.get("/ai/api/admin/settings").status_code == 401
 
 
 def test_saved_key_never_returned(client):

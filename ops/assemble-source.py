@@ -17,7 +17,7 @@ def main():
     root = Path(__file__).resolve().parent.parent
     extensions = {'.py', '.ps1', '.sh', '.lua', '.json', '.conf', '.service', '.js', '.html', '.css', '.yml', '.yaml'}
     files = [root / name for name in ['requirements.txt', 'requirements-dev.txt', '.gitignore', '.gitattributes',
-                                     '.env.example', 'LICENSE', 'NOTICE']]
+                                     '.env.example', 'LICENSE', 'NOTICE', 'AGENTS.md']]
     for folder in ['service', 'static', 'ops', 'tests', '.github']:
         files.extend(path for path in (root / folder).rglob('*')
                      if path.is_file() and path.suffix in extensions and '__pycache__' not in path.parts)
